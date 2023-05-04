@@ -1,0 +1,69 @@
+#Посмотреть текущую конфигурацию kubectl
+kubectl config view
+#Проверка подключения к кластеру
+kubectl cluster-info
+#Посмотреть компоненты в виде pod в namespace kube-system
+kubectl get pods -n kube-system # -n=--namespase
+
+# Создать ресурс из манифеста
+kubectl create -f manifest.yml
+kubectl apply -f manifest.yml
+kubectl apply -f link
+kubectl apply -f directory/
+
+# Создать ресурс из образа: ad-hoc режим
+kubectl run POD_NAME --image IMAGE_NAME --restart=Never
+# --restart=Never - указываем на то, что в качестве ресурса запускаем под
+kubectl run POD_NAME --image IMAGE_NAME --restart=Never --dry-run -o yaml > MANIFEST-NAME.yaml # генерация манифестов средствами kubectl
+# –dry-run - вывод информации о ресурсе без его реального создания
+# -o yaml - форматирование вывода в YAML
+# > MANIFEST-NAME.yaml - перенаправление вывода в файл
+
+# Получить список ресурсов
+kubectl get pods
+
+# Получить описание ресурса
+kubectl describe pod POD_NAME
+
+# Получить состояние системных компонентов
+kubectl get cs
+
+# Удалить под
+kubectl delete pod POD_NAME
+
+# Получить доступ к поду, запущенному внутри кластера
+kubectl port-forward --address 0.0.0.0 pod/POD_NAME 8000:8000
+
+# Создать кластер
+kind create cluster --config FILE.yaml
+
+# Изменить количество реплик сервиса (ad-hoc команда)
+kubectl scale replicaset NAME --replicas=3
+
+# Получить реплики сервиса
+kubectl get rs NAME
+
+# Получить образ, из которого запущен pod
+kubectl get pods -l tier=TIER_NAME -o=jsonpath='{.items[0:3].spec.containers[0].image}'
+
+# Посмотреть историю версий deployment
+kubectl rollout history deployment SERVICE_NAME
+
+# Ролбэк
+kubectl rollout undo deployment SERVICE_NAME --to-revision=PREVIOUS | kubectl get rs -l tier=SERVICE_NAME -w
+
+#
+kubectl config get-contexts
+
+#
+kubectl config use-context NAME
+
+#
+kubectl get clusterrole | grep -v system
+
+kubectl get secret bob-sa -o jsonpath={.data.token} | base64 -d
+
+kubectl get sa 
+
+export KUBECONFIG=~/.kube/config:~/.kube/kind-sa-context
+

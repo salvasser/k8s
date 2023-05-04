@@ -1,0 +1,10 @@
+FROM python:3.9-buster
+EXPOSE 8000
+RUN useradd --uid 1001 user1001
+COPY app app
+WORKDIR /app
+USER user1001
+CMD python3 -m http.server
+
+#docker build -t web_server .
+#docker run -it -p 8000:8000 web_server

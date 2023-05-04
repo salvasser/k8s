@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+  labels:
+    role: myrole
+spec:
+  containers:
+  - name: web
+    image: salvasser/web_server
+    livenessProbe:
+      tcpSocket:
+        port: 8000
+    readinessProbe:
+      httpGet:
+        path: /homework.html
+        port: 8000
+  initContainers:
+  - name: init-web
+    image: busybox:1.31.0
+    command: ['sh', '-c', 'wget -O- https://tinyurl.com/otus-k8s-intro | sh']
+    volumeMounts:
+    - name: app
+      mountPath: /app
+  volumes:
+  - name: app
+    emptyDir: {}
