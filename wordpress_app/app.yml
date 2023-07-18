@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-wordpress
+  namespace: wordpress
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-client"
+spec:
+  storageClassName: "nfs-client"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-server
+  namespace: wordpress
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25.1
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: "/etc/nginx/nginx.conf"
+          subPath: nginx.conf
+        - name: myapp-com
+          mountPath: "/etc/nginx/conf.d/myapp.com"
+          subPath: myapp.com
+        - name: myapp-com-dir
+          mountPath: "/var/www/myapp.com"
+      - name: php-fpm
+        image: exozet/php-fpm:8.0.6-xdebug-alpine
+        volumeMounts:
+        - name: myapp-com-dir
+          mountPath: "/var/www/myapp.com"
+
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: nginx-conf
+      - name: myapp-com-dir
+        persistentVolumeClaim:
+          claimName: pvc-wordpress
+      - name: myapp-com
+        configMap:
+          name: myapp-com
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - node-1
+                - node-2
